@@ -16,10 +16,10 @@ jobs:
         platform: [Win32, x64]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.1
+      uses: microsoft/setup-msbuild@v2
     
     - name: Build project
       run: |
@@ -27,7 +27,7 @@ jobs:
     
     - name: Upload build artifacts
       if: success()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.configuration }}-${{ matrix.platform }}
         path: ${{ matrix.platform }}/${{ matrix.configuration }}/
@@ -37,10 +37,10 @@ jobs:
     needs: build
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.1
+      uses: microsoft/setup-msbuild@v2
     
     - name: Build in Debug mode
       run: msbuild Call_VarsAI14.sln /p:Configuration=Debug /p:Platform=x64
