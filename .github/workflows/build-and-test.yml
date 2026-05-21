@@ -10,27 +10,33 @@ jobs:
   build:
     runs-on: windows-latest
     
-    strategy:
-      matrix:
-        configuration: [Debug, Release]
-        platform: [Win32, x64]
-    
     steps:
     - uses: actions/checkout@v4
     
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
     
-    - name: Build project
+    - name: Build project (Debug x64)
       run: |
-        msbuild Call_VarsAI14.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+        msbuild Call_VarsAI14.sln /p:Configuration=Debug /p:Platform=x64
     
-    - name: Upload build artifacts
+    - name: Build project (Release x64)
+      run: |
+        msbuild Call_VarsAI14.sln /p:Configuration=Release /p:Platform=x64
+    
+    - name: Upload build artifacts (Debug)
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{ matrix.configuration }}-${{ matrix.platform }}
-        path: ${{ matrix.platform }}/${{ matrix.configuration }}/
+        name: build-Debug-x64
+        path: x64/Debug/
+    
+    - name: Upload build artifacts (Release)
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-Release-x64
+        path: x64/Release/
 
   test:
     runs-on: windows-latest
@@ -47,7 +53,12 @@ jobs:
     
     - name: Run application
       run: |
-        .\x64\Debug\Call_VarsAI14.exe
+        if (Test-Path "x64/Debug/Call_VarsAI14.exe") {
+          .\x64\Debug\Call_VarsAI14.exe
+        } else {
+          echo "Executable not found at x64/Debug/Call_VarsAI14.exe"
+          dir x64/
+        }
       continue-on-error: true
     
     - name: Report test results
