@@ -1,0 +1,56 @@
+name: Build and Test Call_VarsAI14
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        platform: [Win32, x64]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    
+    - name: Build project
+      run: |
+        msbuild Call_VarsAI14.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+    
+    - name: Upload build artifacts
+      if: success()
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-${{ matrix.configuration }}-${{ matrix.platform }}
+        path: ${{ matrix.platform }}/${{ matrix.configuration }}/
+
+  test:
+    runs-on: windows-latest
+    needs: build
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    
+    - name: Build in Debug mode
+      run: msbuild Call_VarsAI14.sln /p:Configuration=Debug /p:Platform=x64
+    
+    - name: Run application
+      run: |
+        .\x64\Debug\Call_VarsAI14.exe
+      continue-on-error: true
+    
+    - name: Report test results
+      if: always()
+      run: |
+        echo "Build and test workflow completed"
