@@ -21,8 +21,8 @@ jobs:
     
     - name: Run tests (if available)
       run: |
-        if (Test-Path "Release\Call_VarsAI14.exe") {
-          Release\Call_VarsAI14.exe
+        if (Test-Path "x64\Release\Call_VarsAI14.exe") {
+          x64\Release\Call_VarsAI14.exe
         } else {
           Write-Host "Executable not found"
         }
