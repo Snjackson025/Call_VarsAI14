@@ -1,4 +1,5 @@
 #include "Rasterizer.h"
+#include <cstdlib>
 
 // Constructor
 Rasterizer::Rasterizer(int width, int height)
