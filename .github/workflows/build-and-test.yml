@@ -6,31 +6,32 @@ on:
   pull_request:
     branches: [ master, main ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
-    
+
     - name: Build project (Debug x64)
-      run: |
-        msbuild Call_VarsAI14.sln /p:Configuration=Debug /p:Platform=x64
-    
+      run: msbuild Call_VarsAI14.sln /p:Configuration=Debug /p:Platform=x64
+
     - name: Build project (Release x64)
-      run: |
-        msbuild Call_VarsAI14.sln /p:Configuration=Release /p:Platform=x64
-    
+      run: msbuild Call_VarsAI14.sln /p:Configuration=Release /p:Platform=x64
+
     - name: Upload build artifacts (Debug)
       if: success()
       uses: actions/upload-artifact@v4
       with:
         name: build-Debug-x64
         path: x64/Debug/
-    
+
     - name: Upload build artifacts (Release)
       if: success()
       uses: actions/upload-artifact@v4
@@ -41,27 +42,32 @@ jobs:
   test:
     runs-on: windows-latest
     needs: build
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
-    
+
     - name: Build in Debug mode
       run: msbuild Call_VarsAI14.sln /p:Configuration=Debug /p:Platform=x64
-    
-    - name: Run application
+
+    - name: Run application and verify output
       run: |
-        if (Test-Path "x64/Debug/Call_VarsAI14.exe") {
-          .\x64\Debug\Call_VarsAI14.exe
-        } else {
-          echo "Executable not found at x64/Debug/Call_VarsAI14.exe"
-          dir x64/
+        $exe = "x64/Debug/Call_VarsAI14.exe"
+        if (-not (Test-Path $exe)) {
+          Write-Error "Executable not found at $exe"
+          Get-ChildItem -Recurse x64/ | Select-Object FullName
+          exit 1
         }
-      continue-on-error: true
-    
-    - name: Report test results
-      if: always()
-      run: |
-        echo "Build and test workflow completed"
+        & ./$exe | Tee-Object -FilePath test-output.txt
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "Call_VarsAI14.exe exited with code $LASTEXITCODE"
+          exit 1
+        }
+        if (-not (Select-String -Path test-output.txt -Pattern "Final Result \(perimeter\): 12" -Quiet)) {
+          Write-Error "Expected output 'Final Result (perimeter): 12' not found"
+          Get-Content test-output.txt
+          exit 1
+        }
+        Write-Host "Test passed: Final Result (perimeter): 12"
