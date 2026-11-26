@@ -1,11 +1,25 @@
 # Call_VarsAI14
 
-Synthetic AI - VR Engine Project
+**Synthetic AI — a VR engine project.**
 
-## Build & Test
-This project is automatically built and tested via GitHub Actions on every push.
+## What it does
 
-See the [Actions](https://github.com/Snjackson025/Call_VarsAI14/actions) tab for build status and logs.
+- **AIEquationEngine** — solves equations, including the Pythagorean
+  triangle layer (a = 3, b = 4 gives hypotenuse 5 and perimeter 12)
+- **VREngine, VRDevice, VRRenderer, VRInput** — the VR layer
+- **AIEngine, Orchestrator, Memory, Loop, Rasterizer, MathTypes, Math3D**
+  — the supporting systems
 
-## Latest Build
-The workflow has been triggered and is running now. Check the Actions tab for real-time updates.
+Run it and it initializes the Call_Vars engine, loads the triangle
+layer, and prints the final result (perimeter): 12.
+
+## Build and run
+
+With Visual Studio, open the solution and build Debug x64. The exe
+lands at `x64/Debug/Call_VarsAI14.exe`.
+
+## Continuous integration
+
+`.github/workflows/build-and-test.yml` builds Debug x64 with MSBuild and
+runs the exe, failing unless it exits 0 and prints
+"Final Result (perimeter): 12". It also runs daily at 06:00 UTC.
